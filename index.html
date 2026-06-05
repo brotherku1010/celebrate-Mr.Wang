@@ -221,17 +221,19 @@
                 downloadBtn.href = card.fileName;
                 downloadBtn.download = card.downloadName;
                 
-                // === 👇 數字抓取 + 預防重複邏輯 👇 ===
+                // === 👇 數字抓取 + 預防重複邏輯 (中文座號版) 👇 ===
                 let seatNo = "";
                 
-                // 1. 抓取座號 (不管檔名是 No11、NO.11 都能精準抓出 11)
+                // 1. 抓取座號
                 let exactMatch = card.fileName.match(/NO[\.\s]*(\d+)/i); 
                 if (exactMatch) {
-                    seatNo = `NO.${exactMatch[1]}`;
+                    // 成功抓出數字後，把 NO. 拿掉，改成在後面加「號」
+                    seatNo = `${exactMatch[1]}號`;
                 } else {
                     let anyNumberMatch = card.fileName.match(/\d+/);
                     if (anyNumberMatch) {
-                        seatNo = `NO.${anyNumberMatch[0]}`;
+                        // 備用方案：同樣在抓到的數字後面加「號」
+                        seatNo = `${anyNumberMatch[0]}號`;
                     }
                 }
 
@@ -245,11 +247,11 @@
 
                 // 3. 將 座號 + 名字 + 上下集 組合顯示
                 if (seatNo) {
-                    greetingText.innerText = ` ${seatNo} ${card.name}${partSuffix} `;
+                    greetingText.innerText = `${seatNo} ${card.name}${partSuffix}`;
                 } else {
-                    greetingText.innerText = ` ${card.name}${partSuffix} `;
+                    greetingText.innerText = `${card.name}${partSuffix}`;
                 }
-                // === 👆 數字抓取 + 預防重複邏輯 👆 ===
+                // === 👆 數字抓取 + 預防重複邏輯 (中文座號版) 👆 ===
 
                 pageIndicator.innerText = `${currentIndex + 1} / ${cardData.length}`;
 
