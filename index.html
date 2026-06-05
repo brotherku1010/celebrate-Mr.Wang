@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>您有一張專屬畢業祝賀卡</title>
+    <title>您有專屬畢業祝賀</title>
     <style>
         body {
             margin: 0;
@@ -20,38 +20,84 @@
             background-attachment: fixed;
             font-family: 'Helvetica Neue', Arial, sans-serif;
         }
-        /* --- 2. 單一卡片容器 (修正後：毛玻璃質感) --- */
-        /* 將圖片和下方文字、按鈕都包裹在同一個容器 */
+
         .card-container {
             width: 90%;
             max-width: 400px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4); /* 增加陰影 */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
             border-radius: 16px;
             overflow: hidden;
-            
-            /* 強制應用毛玻璃效果 */
-            background-color: rgba(255, 255, 255, 0.85); /* 白色半透明 */
-            backdrop-filter: blur(10px); /* 模糊濾鏡 (關鍵) */
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5); /* 柔和邊框 */
-            
+            border: 1px solid rgba(255, 255, 255, 0.5);
             text-align: center;
             padding-bottom: 24px;
         }
 
-        /* --- 3. 卡片圖片 (修正後) --- */
-        .card-image {
+        /* --- 圖片展示區 (加入相對定位以放置左右按鈕) --- */
+        .image-wrapper {
+            position: relative;
             width: 100%;
-            height: auto;
-            display: block;
-            /* 圖片本身不帶背景色，以免遮擋毛玻璃容器 */
-            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px; 
+            background-color: rgba(0,0,0,0.03); /* 稍微有點底色襯托 */
         }
 
-        /* --- 4. 按鈕樣式 (維持不變) --- */
+        /* 共用於圖片與影片的樣式 */
+        .media-content {
+            width: 100%;
+            height: auto;
+            max-height: 60vh; /* 避免直式圖片或影片過長佔滿螢幕 */
+            object-fit: contain; 
+            display: block;
+        }
+
+        /* --- 左右切換箭頭按鈕 --- */
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+            z-index: 10;
+        }
+        .nav-btn:hover { background-color: rgba(0, 0, 0, 0.7); }
+        .prev-btn { left: 10px; }
+        .next-btn { right: 10px; }
+
+        /* --- 頁碼與文字樣式 --- */
+        .page-indicator {
+            font-size: 14px;
+            color: #666;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .greeting-text {
+            margin-top: 5px;
+            font-size: 22px;
+            color: #1e3c72;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        /* --- 按鈕樣式 (維持不變) --- */
         .download-btn {
             display: inline-block;
-            margin-top: 20px;
+            margin-top: 15px;
             padding: 12px 24px;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: #FFD700; 
@@ -63,26 +109,9 @@
             transition: transform 0.2s, box-shadow 0.2s;
             border: 1px solid #FFD700;
         }
-
         .download-btn:active {
             transform: scale(0.95);
             box-shadow: 0 2px 10px rgba(30, 60, 114, 0.3);
-        }
-
-        /* --- 5. 文字樣式 (修正後) --- */
-        .greeting-text {
-            margin-top: 20px;
-            font-size: 22px;
-            color: #1e3c72;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-        .text {
-            margin-top: 16px;
-            font-size: 18px;
-            color: #1e3c72;
-            font-weight: bold;
-            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -90,75 +119,66 @@
 
     <div class="card-container">
         
-        <div class="carousel" id="imageCarousel">
-            <p style="padding: 50px; color: #1e3c72; font-weight: bold;">🎓 卡片載入中...</p>
+        <div class="image-wrapper" id="imageWrapper">
+            <button class="nav-btn prev-btn" id="prevBtn" style="display: none;">❮</button>
+            
+            <div id="loadingText" style="padding: 50px; color: #1e3c72; font-weight: bold;">🎓 資料載入中...</div>
+            
+            <div id="mediaContainer" style="width: 100%; display: none;"></div>
+            
+            <button class="nav-btn next-btn" id="nextBtn" style="display: none;">❯</button>
         </div>
-        
-        <div class="swipe-hint">👈 左右滑動挑選卡片 👉</div>
 
-        <div class="greeting-text">🎓 桃李滿天下，師恩無量 🎓</div>
+        <div class="page-indicator" id="pageIndicator"></div>
+
+        <div class="greeting-text" id="greetingText">🎓 畢業快樂 🎓</div>
         
-        <a href="#" download="" class="download-btn" id="downloadBtn">
-            📥 點擊可下載~
+        <a href="#" download="" class="download-btn" id="downloadBtn" style="display: none;">
+            📥 點擊下載
         </a>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
-            const carousel = document.getElementById('imageCarousel');
+            let cardData = [];
+            let currentIndex = 0;
+
+            const mediaContainer = document.getElementById('mediaContainer');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
             const downloadBtn = document.getElementById('downloadBtn');
+            const loadingText = document.getElementById('loadingText');
+            const pageIndicator = document.getElementById('pageIndicator');
+            const greetingText = document.getElementById('greetingText');
 
-            try {
-                // 1. 讀取同一個資料夾底下的 cards.json
-                const response = await fetch('cards.json');
-                const cardData = await response.json();
-
-                // 2. 清空「載入中」的文字
-                carousel.innerHTML = '';
-
-                // 3. 根據 JSON 資料，自動生成所有 <img> 標籤
-                cardData.forEach(card => {
+            // 核心功能：切換畫面與連動資料
+            function updateView() {
+                if (cardData.length === 0) return;
+                const card = cardData[currentIndex];
+                
+                // 1. 清空目前的影像
+                mediaContainer.innerHTML = '';
+                
+                // 2. 判斷是圖片還是影片 (MOV 或 MP4)
+                const fileExt = card.fileName.split('.').pop().toUpperCase();
+                if (fileExt === 'MOV' || fileExt === 'MP4') {
+                    const video = document.createElement('video');
+                    video.src = card.fileName;
+                    video.className = 'media-content';
+                    video.controls = true; // 顯示播放條
+                    video.playsInline = true; // 讓手機可以在網頁內播放而不強制全螢幕
+                    mediaContainer.appendChild(video);
+                } else {
                     const img = document.createElement('img');
                     img.src = card.fileName;
                     img.alt = `${card.name}的祝賀卡`;
-                    img.setAttribute('data-file', card.fileName);
-                    img.setAttribute('data-name', card.downloadName);
-                    carousel.appendChild(img);
-                });
-
-                // 4. 等圖片都塞進去後，啟動滑動監聽 (IntersectionObserver)
-                const images = carousel.querySelectorAll('img');
-                const observerOptions = {
-                    root: carousel,
-                    rootMargin: '0px',
-                    threshold: 0.6 // 圖片進入視野 60% 時觸發連動
-                };
-
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const activeImg = entry.target;
-                            downloadBtn.href = activeImg.getAttribute('data-file');
-                            downloadBtn.download = activeImg.getAttribute('data-name');
-                        }
-                    });
-                }, observerOptions);
-
-                // 綁定每一張剛剛生成的圖片
-                images.forEach(img => {
-                    observer.observe(img);
-                });
-
-                // 初始化：確保一開啟網頁，按鈕就已經綁定第一張圖的下載連結
-                if (images.length > 0) {
-                    downloadBtn.href = images[0].getAttribute('data-file');
-                    downloadBtn.download = images[0].getAttribute('data-name');
+                    img.className = 'media-content';
+                    mediaContainer.appendChild(img);
                 }
 
-            } catch (error) {
-                console.error('JSON 讀取失敗:', error);
-                carousel.innerHTML = '<p style="padding: 50px; color: red;">載入失敗，請確認 cards.json 是否正確上傳</p>';
-            }
-        });
-    </script>
-</body>
+                // 3. 更新下載按鈕的連結與預設檔名
+                downloadBtn.href = card.fileName;
+                downloadBtn.download = card.downloadName;
+                
+                // 4. 動態顯示名字
+                greetingText.innerText = `🎓 ${
