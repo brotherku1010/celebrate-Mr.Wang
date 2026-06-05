@@ -1,0 +1,76 @@
+<body>
+
+    <div class="card-container">
+        
+        <div class="carousel" id="imageCarousel">
+            <p style="padding: 50px; color: #1e3c72; font-weight: bold;">🎓 卡片載入中...</p>
+        </div>
+        
+        <div class="swipe-hint">👈 左右滑動挑選卡片 👉</div>
+
+        <div class="greeting-text">🎓 桃李滿天下，師恩無量 🎓</div>
+        
+        <a href="#" download="" class="download-btn" id="downloadBtn">
+            📥 點擊可下載~
+        </a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const carousel = document.getElementById('imageCarousel');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            try {
+                // 1. 讀取同一個資料夾底下的 cards.json
+                const response = await fetch('cards.json');
+                const cardData = await response.json();
+
+                // 2. 清空「載入中」的文字
+                carousel.innerHTML = '';
+
+                // 3. 根據 JSON 資料，自動生成所有 <img> 標籤
+                cardData.forEach(card => {
+                    const img = document.createElement('img');
+                    img.src = card.fileName;
+                    img.alt = `${card.name}的祝賀卡`;
+                    img.setAttribute('data-file', card.fileName);
+                    img.setAttribute('data-name', card.downloadName);
+                    carousel.appendChild(img);
+                });
+
+                // 4. 等圖片都塞進去後，啟動滑動監聽 (IntersectionObserver)
+                const images = carousel.querySelectorAll('img');
+                const observerOptions = {
+                    root: carousel,
+                    rootMargin: '0px',
+                    threshold: 0.6 // 圖片進入視野 60% 時觸發連動
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const activeImg = entry.target;
+                            downloadBtn.href = activeImg.getAttribute('data-file');
+                            downloadBtn.download = activeImg.getAttribute('data-name');
+                        }
+                    });
+                }, observerOptions);
+
+                // 綁定每一張剛剛生成的圖片
+                images.forEach(img => {
+                    observer.observe(img);
+                });
+
+                // 初始化：確保一開啟網頁，按鈕就已經綁定第一張圖的下載連結
+                if (images.length > 0) {
+                    downloadBtn.href = images[0].getAttribute('data-file');
+                    downloadBtn.download = images[0].getAttribute('data-name');
+                }
+
+            } catch (error) {
+                console.error('JSON 讀取失敗:', error);
+                carousel.innerHTML = '<p style="padding: 50px; color: red;">載入失敗，請確認 cards.json 是否正確上傳</p>';
+            }
+        });
+    </script>
+</body>
