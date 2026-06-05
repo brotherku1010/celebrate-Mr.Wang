@@ -181,4 +181,50 @@
                 downloadBtn.download = card.downloadName;
                 
                 // 4. 動態顯示名字
-                greetingText.innerText = `🎓 ${
+                greetingText.innerText = `🎓 ${card.name} 🎓`;
+
+                // 5. 更新目前的頁數 (例如: 1 / 13)
+                pageIndicator.innerText = `${currentIndex + 1} / ${cardData.length}`;
+
+                // 6. 判斷左/右按鈕是否需要隱藏 (第一張藏左邊，最後一張藏右邊)
+                prevBtn.style.display = currentIndex > 0 ? 'flex' : 'none';
+                nextBtn.style.display = currentIndex < cardData.length - 1 ? 'flex' : 'none';
+            }
+
+            // 綁定左箭頭點擊事件
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateView();
+                }
+            });
+
+            // 綁定右箭頭點擊事件
+            nextBtn.addEventListener('click', () => {
+                if (currentIndex < cardData.length - 1) {
+                    currentIndex++;
+                    updateView();
+                }
+            });
+
+            // 啟動：讀取 JSON
+            try {
+                const response = await fetch('cards.json');
+                cardData = await response.json();
+
+                if (cardData.length > 0) {
+                    loadingText.style.display = 'none';
+                    mediaContainer.style.display = 'block';
+                    downloadBtn.style.display = 'inline-block';
+                    updateView(); // 載入第一張畫面
+                } else {
+                    loadingText.innerText = '名單內目前沒有卡片資料。';
+                }
+            } catch (error) {
+                console.error('JSON 讀取失敗:', error);
+                loadingText.innerText = '載入失敗，請確認 cards.json 是否正確上傳。';
+            }
+        });
+    </script>
+</body>
+</html>
