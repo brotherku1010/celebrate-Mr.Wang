@@ -33,9 +33,10 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
             text-align: center;
             padding-bottom: 24px;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* --- 圖片展示區 (加入相對定位以放置左右按鈕) --- */
         .image-wrapper {
             position: relative;
             width: 100%;
@@ -43,38 +44,46 @@
             align-items: center;
             justify-content: center;
             min-height: 300px; 
-            background-color: rgba(0,0,0,0.03); /* 稍微有點底色襯托 */
+            background-color: rgba(0,0,0,0.03);
         }
 
-        /* 共用於圖片與影片的樣式 */
         .media-content {
             width: 100%;
             height: auto;
-            max-height: 60vh; /* 避免直式圖片或影片過長佔滿螢幕 */
+            max-height: 60vh; 
             object-fit: contain; 
             display: block;
         }
 
-        /* --- 左右切換箭頭按鈕 --- */
+        /* --- 文字與按鈕的包裝區塊 --- */
+        .info-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* --- 左右切換箭頭按鈕 (放大並移出卡片外) --- */
         .nav-btn {
-            position: absolute;
+            position: fixed; /* 固定在螢幕上，不受卡片限制 */
             top: 50%;
             transform: translateY(-50%);
-            background-color: rgba(0, 0, 0, 0.4);
+            background-color: rgba(0, 0, 0, 0.5);
             color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
+            border: 2px solid rgba(255,255,255,0.3); /* 加點邊框更有質感 */
+            width: 50px;  /* 放大按鈕寬度 */
+            height: 50px; /* 放大按鈕高度 */
             border-radius: 50%;
-            font-size: 18px;
+            font-size: 24px; /* 放大箭頭 */
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.3s;
-            z-index: 10;
+            transition: all 0.3s ease;
+            z-index: 100; /* 確保疊在最上層 */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .nav-btn:hover { background-color: rgba(0, 0, 0, 0.7); }
+        .nav-btn:hover { background-color: rgba(0, 0, 0, 0.8); transform: translateY(-50%) scale(1.1); }
         .prev-btn { left: 10px; }
         .next-btn { right: 10px; }
 
@@ -94,7 +103,7 @@
             letter-spacing: 2px;
         }
 
-        /* --- 按鈕樣式 (維持不變) --- */
+        /* --- 下載按鈕 --- */
         .download-btn {
             display: inline-block;
             margin-top: 15px;
@@ -113,30 +122,66 @@
             transform: scale(0.95);
             box-shadow: 0 2px 10px rgba(30, 60, 114, 0.3);
         }
+
+        /* =========================================
+           橫擺螢幕 (Landscape) 專屬排版優化
+           ========================================= */
+        @media (orientation: landscape) {
+            .nav-btn {
+                width: 60px; /* 橫向時螢幕兩側空間大，按鈕再放大 */
+                height: 60px;
+                font-size: 28px;
+                margin: 0 20px;
+            }
+            .card-container {
+                max-width: 800px; /* 放寬卡片容器 */
+                width: 85%;
+                flex-direction: row; /* 改成左右分欄排列 */
+                padding-bottom: 0;
+                padding: 15px;
+                align-items: center;
+                gap: 20px;
+            }
+            .image-wrapper {
+                flex: 1; /* 圖片區自動撐開佔據主要空間 */
+                border-radius: 8px; /* 橫向時給圖片區一點圓角 */
+                overflow: hidden;
+            }
+            .media-content {
+                max-height: 85vh; /* 橫向時，高度最大化，看得更清楚 */
+            }
+            .info-wrapper {
+                width: 250px; /* 文字與按鈕區塊固定寬度 */
+                padding-right: 15px;
+                justify-content: center;
+            }
+            .greeting-text {
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
 
+    <button class="nav-btn prev-btn" id="prevBtn" style="display: none;">❮</button>
+
     <div class="card-container">
         
         <div class="image-wrapper" id="imageWrapper">
-            <button class="nav-btn prev-btn" id="prevBtn" style="display: none;">❮</button>
-            
             <div id="loadingText" style="padding: 50px; color: #1e3c72; font-weight: bold;">🎓 資料載入中...</div>
-            
             <div id="mediaContainer" style="width: 100%; display: none;"></div>
-            
-            <button class="nav-btn next-btn" id="nextBtn" style="display: none;">❯</button>
         </div>
 
-        <div class="page-indicator" id="pageIndicator"></div>
-
-        <div class="greeting-text" id="greetingText">🎓 畢業快樂 🎓</div>
-        
-        <a href="#" download="" class="download-btn" id="downloadBtn" style="display: none;">
-            📥 點擊下載
-        </a>
+        <div class="info-wrapper">
+            <div class="page-indicator" id="pageIndicator"></div>
+            <div class="greeting-text" id="greetingText">🎓 畢業快樂 🎓</div>
+            <a href="#" download="" class="download-btn" id="downloadBtn" style="display: none;">
+                📥 點擊下載
+            </a>
+        </div>
     </div>
+
+    <button class="nav-btn next-btn" id="nextBtn" style="display: none;">❯</button>
 
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
@@ -151,22 +196,19 @@
             const pageIndicator = document.getElementById('pageIndicator');
             const greetingText = document.getElementById('greetingText');
 
-            // 核心功能：切換畫面與連動資料
             function updateView() {
                 if (cardData.length === 0) return;
                 const card = cardData[currentIndex];
                 
-                // 1. 清空目前的影像
                 mediaContainer.innerHTML = '';
                 
-                // 2. 判斷是圖片還是影片 (MOV 或 MP4)
                 const fileExt = card.fileName.split('.').pop().toUpperCase();
                 if (fileExt === 'MOV' || fileExt === 'MP4') {
                     const video = document.createElement('video');
                     video.src = card.fileName;
                     video.className = 'media-content';
-                    video.controls = true; // 顯示播放條
-                    video.playsInline = true; // 讓手機可以在網頁內播放而不強制全螢幕
+                    video.controls = true;
+                    video.playsInline = true;
                     mediaContainer.appendChild(video);
                 } else {
                     const img = document.createElement('img');
@@ -176,22 +218,15 @@
                     mediaContainer.appendChild(img);
                 }
 
-                // 3. 更新下載按鈕的連結與預設檔名
                 downloadBtn.href = card.fileName;
                 downloadBtn.download = card.downloadName;
-                
-                // 4. 動態顯示名字
                 greetingText.innerText = `🎓 ${card.name} 🎓`;
-
-                // 5. 更新目前的頁數 (例如: 1 / 13)
                 pageIndicator.innerText = `${currentIndex + 1} / ${cardData.length}`;
 
-                // 6. 判斷左/右按鈕是否需要隱藏 (第一張藏左邊，最後一張藏右邊)
                 prevBtn.style.display = currentIndex > 0 ? 'flex' : 'none';
                 nextBtn.style.display = currentIndex < cardData.length - 1 ? 'flex' : 'none';
             }
 
-            // 綁定左箭頭點擊事件
             prevBtn.addEventListener('click', () => {
                 if (currentIndex > 0) {
                     currentIndex--;
@@ -199,7 +234,6 @@
                 }
             });
 
-            // 綁定右箭頭點擊事件
             nextBtn.addEventListener('click', () => {
                 if (currentIndex < cardData.length - 1) {
                     currentIndex++;
@@ -207,7 +241,6 @@
                 }
             });
 
-            // 啟動：讀取 JSON
             try {
                 const response = await fetch('cards.json');
                 cardData = await response.json();
@@ -216,7 +249,7 @@
                     loadingText.style.display = 'none';
                     mediaContainer.style.display = 'block';
                     downloadBtn.style.display = 'inline-block';
-                    updateView(); // 載入第一張畫面
+                    updateView(); 
                 } else {
                     loadingText.innerText = '名單內目前沒有卡片資料。';
                 }
