@@ -220,7 +220,32 @@
 
                 downloadBtn.href = card.fileName;
                 downloadBtn.download = card.downloadName;
-                greetingText.innerText = `🎓 ${card.name} 🎓`;
+                
+                // === 👇 新增的擷取座號邏輯 👇 ===
+                let seatNo = "";
+                // 嘗試從檔名中找出 "NO.數字" (不分大小寫)
+                let match = card.fileName.match(/NO\.\d+/i); 
+                
+                if (match) {
+                    // 如果檔名裡有 "NO.1"，就把它抓出來並轉大寫
+                    seatNo = match[0].toUpperCase();
+                } else {
+                    // (備用) 如果檔名只有數字開頭，例如 "1_王小明.jpg"，就自動幫它加上 "NO."
+                    let numMatch = card.fileName.match(/^\d+/);
+                    if (numMatch) {
+                        seatNo = `NO.${numMatch[0]}`;
+                    }
+                }
+
+                // 將座號與名字組合顯示
+                if (seatNo) {
+                    greetingText.innerText = `${seatNo} ${card.name}`;
+                } else {
+                    // 萬一檔名找不到數字防呆，就維持只顯示名字
+                    greetingText.innerText = `${card.name}`;
+                }
+                // === 👆 新增的擷取座號邏輯 👆 ===
+
                 pageIndicator.innerText = `${currentIndex + 1} / ${cardData.length}`;
 
                 prevBtn.style.display = currentIndex > 0 ? 'flex' : 'none';
